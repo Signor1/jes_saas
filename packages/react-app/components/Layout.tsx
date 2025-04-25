@@ -1,22 +1,25 @@
-import { FC, ReactNode } from "react";
-import Footer from "./Footer";
-import Header from "./Header";
+import type React from "react"
+import "@/app/globals.css"
+import { ThemeProvider } from "@/components/context/theme-context"
+import { Toaster } from "@/components/ui/sonner"
 
-interface Props {
-    children: ReactNode;
+
+export const metadata = {
+  title: "MiniPay Merchant Platform",
+  description: "Accept payments with MiniPay",
 }
-const Layout: FC<Props> = ({ children }) => {
-    return (
-        <>
-            <div className="bg-gypsum overflow-hidden flex flex-col min-h-screen">
-                <Header />
-                <div className="py-16 max-w-7xl mx-auto space-y-8 sm:px-6 lg:px-8">
-                    {children}
-                </div>
-                <Footer />
-            </div>
-        </>
-    );
-};
 
-export default Layout;
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <html lang="en">
+      <body>
+        <ThemeProvider>{children}</ThemeProvider>
+        <Toaster richColors />
+      </body>
+    </html>
+  )
+}
