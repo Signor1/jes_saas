@@ -4,7 +4,6 @@ mod store_tests {
     use crate::db::models::*;
     use crate::routes::store_handler::*;
     use crate::state::{AppState, AppStateDb};
-
     use axum::{
         routing::{get, post, put},
         Router,

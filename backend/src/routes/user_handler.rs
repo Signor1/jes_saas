@@ -1,9 +1,5 @@
 use crate::authentication::authentication::Claims;
 use crate::db::models::*;
-use ethabi::ethereum_types::Address;
-use sqlx::types::Decimal;
-use web3::types::{H256, U256};
-
 use crate::db::models::{
     AddToCartRequest, CartItem, CheckoutRequest, CreateOrderRequest, Order, RegisterUserRequest,
     User,
@@ -19,9 +15,11 @@ use axum::{
     http::StatusCode,
 };
 use axum_macros::debug_handler;
-
+use ethabi::ethereum_types::Address;
+use sqlx::types::Decimal;
 use std::str::FromStr;
 use std::sync::Arc;
+use web3::types::{H256, U256};
 
 #[debug_handler]
 pub async fn register_user_handler(
