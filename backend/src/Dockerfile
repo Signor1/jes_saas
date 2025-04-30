@@ -21,7 +21,7 @@ FROM rust:1.81-slim-bookworm
 RUN apt-get update && apt-get install -y libpq-dev && rm -rf /var/lib/apt/lists/*
 
 # Copy the built binary
-COPY --from=builder /usr/src/app/target/release/your-app-name /usr/local/bin/app
+COPY --from=builder /usr/src/app/target/release/backend /usr/local/bin/app
 
 # Expose the port (Render expects PORT env var, default 10000)
 EXPOSE 10000
@@ -30,4 +30,4 @@ EXPOSE 10000
 ENV PORT=10000
 
 # Run the application
-CMD ["app"]
+CMD ["backend"]
