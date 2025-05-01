@@ -23,11 +23,8 @@ RUN apt-get update && apt-get install -y libpq-dev && rm -rf /var/lib/apt/lists/
 # Copy the built binary
 COPY --from=builder /usr/src/app/target/release/backend /usr/local/bin/app
 
-# Expose the port (Render expects PORT env var, default 10000)
-EXPOSE 10000
-
-# Set environment variables (will be overridden by Render)
-ENV PORT=10000
+# Expose the port (Railway sets PORT env var, default 3000)
+EXPOSE 3000
 
 # Run the application
 CMD ["app"]
