@@ -1,5 +1,5 @@
 # Use official Rust image for building
-FROM rust:1.81 AS builder
+FROM rust:nightly AS builder
 
 # Set working directory
 WORKDIR /usr/src/app
@@ -15,7 +15,7 @@ COPY . .
 RUN cargo build --release
 
 # Final runtime image
-FROM rust:1.81-slim-bookworm
+FROM rust:nightly-slim-bookworm
 
 # Install libpq for PostgreSQL
 RUN apt-get update && apt-get install -y libpq-dev && rm -rf /var/lib/apt/lists/*
