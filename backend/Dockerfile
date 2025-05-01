@@ -1,5 +1,5 @@
 # Use Rust nightly image for building with specific version tag
-FROM rust:nightly-20240415 AS builder
+FROM rustlang/rust:nightly AS builder
 
 # Set working directory
 WORKDIR /usr/src/app
