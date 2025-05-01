@@ -1,4 +1,4 @@
-# Use official Rust image for building
+# Use Rust nightly image for building
 FROM rust:nightly AS builder
 
 # Set working directory
