@@ -4,14 +4,14 @@ FROM rust:1.81 AS builder
 # Set working directory
 WORKDIR /usr/src/app
 
-# Copy Cargo files from backend/ and create a dummy main.rs to cache dependencies
-COPY backend/Cargo.toml backend/Cargo.lock ./
+# Copy Cargo files and create a dummy main.rs to cache dependencies
+COPY Cargo.toml Cargo.lock ./
 RUN mkdir src && echo "fn main() {}" > src/main.rs
 RUN cargo build --release
 RUN rm -rf src
 
 # Copy source code and build the application
-COPY backend/ .
+COPY . .
 RUN cargo build --release
 
 # Final runtime image
