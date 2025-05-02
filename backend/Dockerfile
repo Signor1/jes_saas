@@ -1,5 +1,5 @@
-# Use Rust nightly image for building with specific version tag
-FROM rust:nightly-20240415 AS builder
+# Use latest stable Rust image for building (recommended for production)
+FROM rust:latest AS builder
 
 # Install build dependencies including OpenSSL and pkg-config
 RUN apt-get update && \
@@ -28,8 +28,8 @@ FROM debian:bookworm-slim
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     libssl3 \
-    libpq5=15.12-0+deb12u2 \
-    ca-certificates=20230311 && \
+    libpq5 \
+    ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
 # Copy the built binary
