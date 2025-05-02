@@ -1,5 +1,12 @@
 # Use Rust nightly image for building with specific version tag
-FROM rustlang/rust:nightly-slim AS builder
+FROM rust:nightly-20240415 AS builder
+
+# Install build dependencies including OpenSSL and pkg-config
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    pkg-config \
+    libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
 WORKDIR /usr/src/app
@@ -17,9 +24,10 @@ RUN cargo build --release
 # Final runtime image - much smaller than rust image
 FROM debian:bookworm-slim
 
-# Install only required dependencies with version pinning and no recommended packages
+# Install only required runtime dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
+    libssl3 \
     libpq5=15.12-0+deb12u2 \
     ca-certificates=20230311 && \
     rm -rf /var/lib/apt/lists/*
