@@ -40,9 +40,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let app = Router::new()
         .route("/", get(|| async { "JES SaaS Backend is running!" }))
         .route("/login", post(login_handler))
-        .route("/register_users", post(register_user_handler))
+        .route("/register", post(register_user_handler))
         .route(
-            "/create_stores",
+            "/create_store",
             post(create_store_handler).layer(auth_layer.clone()),
         )
         .route(
