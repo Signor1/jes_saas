@@ -55,7 +55,7 @@ pub async fn create_store(
     image_cid: Option<String>,
 ) -> Result<Store, sqlx::Error> {
     let store_id = Uuid::new_v4();
-    let share_link = format!("https://your-miniapp.com/store/{}", store_id);
+    let share_link = format!("https://jes-saas.onrender.com/store/{}", store_id);
 
     sqlx::query!(
         r#"
@@ -474,7 +474,7 @@ pub async fn update_store(
     payload: CreateStoreRequest,
     image_cid: Option<String>,
 ) -> Result<Store, sqlx::Error> {
-    let share_link = format!("https://your-miniapp.com/store/{}", store_id);
+    let share_link = format!("https://jes-saas.onrender.com/store/{}", store_id);
 
     sqlx::query!(
         r#"
@@ -531,7 +531,7 @@ pub async fn get_all_stores(db: &PgPool) -> Result<Vec<Store>, sqlx::Error> {
             image_cid, 
             description, 
             owner_address,
-            format('https://your-miniapp.com/store/{}', id) as "share_link!"
+            format('https://jes-saas.onrender.com/store/{}', id) as "share_link!"
         FROM stores
         "#
     )
@@ -539,4 +539,24 @@ pub async fn get_all_stores(db: &PgPool) -> Result<Vec<Store>, sqlx::Error> {
     .await?;
 
     Ok(stores)
+}
+
+pub async fn get_store_by_id(db: &PgPool, store_id: Uuid) -> Result<Store, sqlx::Error> {
+    sqlx::query_as!(
+        Store,
+        r#"
+        SELECT 
+            id, 
+            store_name, 
+            image_cid, 
+            description, 
+            owner_address,
+            format('https://jes-saas.onrender.com/store/{}', id) as "share_link!"
+        FROM stores
+        WHERE id = $1
+        "#,
+        store_id
+    )
+    .fetch_one(db)
+    .await
 }
