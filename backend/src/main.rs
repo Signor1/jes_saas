@@ -38,10 +38,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let auth_layer = middleware::from_fn_with_state(state.clone(), auth_middleware);
 
     let app = Router::new()
+        .route("/", get(|| async { "JES SaaS Backend is running!" }))
         .route("/login", post(login_handler))
-        .route("/users", post(register_user_handler))
+        .route("/register", post(register_user_handler))
         .route(
-            "/stores",
+            "/create_store",
             post(create_store_handler).layer(auth_layer.clone()),
         )
         .route(
@@ -62,9 +63,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         )
         .route("/products/:id/quantity", get(get_product_quantity_handler))
         .route(
-            "/orders",
+            "/create_orders",
             post(create_order_handler).layer(auth_layer.clone()),
         )
+        .route("/stores", get(get_all_stores_handler))
         .route(
             "/cart",
             post(add_to_cart_handler)

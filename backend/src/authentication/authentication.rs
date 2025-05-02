@@ -15,7 +15,7 @@ pub struct Claims {
 }
 
 pub async fn auth_middleware(
-    State(state): State<Arc<AppState>>,
+    State(_state): State<Arc<AppState>>,
     mut req: Request<Body>,
     next: Next,
 ) -> Result<Response, (StatusCode, String)> {
@@ -61,7 +61,7 @@ pub async fn login_handler(
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
-    let role = if let Some(user) = user {
+    let role = if let Some(_user) = user {
         let store = sqlx::query!(
             r#"
             SELECT id FROM stores WHERE owner_address = $1
