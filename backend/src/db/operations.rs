@@ -520,3 +520,23 @@ pub async fn delete_store(db: &PgPool, store_id: Uuid) -> Result<(), sqlx::Error
 
     Ok(())
 }
+
+pub async fn get_all_stores(db: &PgPool) -> Result<Vec<Store>, sqlx::Error> {
+    let stores = sqlx::query_as!(
+        Store,
+        r#"
+        SELECT 
+            id, 
+            store_name, 
+            image_cid, 
+            description, 
+            owner_address,
+            format('https://your-miniapp.com/store/{}', id) as "share_link!"
+        FROM stores
+        "#
+    )
+    .fetch_all(db)
+    .await?;
+
+    Ok(stores)
+}

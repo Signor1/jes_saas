@@ -1,5 +1,5 @@
 use crate::authentication::authentication::Claims;
-use crate::db::operations::{delete_store, get_store_orders, update_store};
+use crate::db::operations::{delete_store, get_all_stores, get_store_orders, update_store};
 use crate::state::AppState;
 use crate::{add_product, create_store, get_product_quantity, list_products, Product};
 use crate::{AddProductRequest, CreateStoreRequest, Order, Store};
@@ -227,4 +227,14 @@ pub async fn delete_store_handler(
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
     Ok(())
+}
+
+#[debug_handler]
+pub async fn get_all_stores_handler(
+    State(state): State<Arc<AppState>>,
+) -> Result<Json<Vec<Store>>, (StatusCode, String)> {
+    let stores = get_all_stores(&state.db.pool)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    Ok(Json(stores))
 }
