@@ -38,6 +38,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let auth_layer = middleware::from_fn_with_state(state.clone(), auth_middleware);
 
     let app = Router::new()
+        .route("/", get(|| async { "JES SaaS Backend is running!" }))
         .route("/login", post(login_handler))
         .route("/users", post(register_user_handler))
         .route(
