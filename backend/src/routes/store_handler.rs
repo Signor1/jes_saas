@@ -12,7 +12,7 @@ use axum::{
 };
 use axum_macros::debug_handler;
 use std::sync::Arc;
-use tracing::info;
+use tracing::{debug, info};
 use uuid::Uuid;
 
 #[debug_handler]
@@ -115,9 +115,22 @@ pub async fn get_product_quantity_handler(
     State(state): State<Arc<AppState>>,
     Path(product_id): Path<Uuid>,
 ) -> Result<Json<i32>, (StatusCode, String)> {
+    debug!("Fetching quantity for product_id: {}", product_id);
     let quantity = get_product_quantity(&state.db.pool, product_id)
         .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        .map_err(|e| {
+            debug!(
+                "Error fetching quantity for product_id {}: {:?}",
+                product_id, e
+            );
+            match e {
+                sqlx::Error::RowNotFound => (
+                    StatusCode::NOT_FOUND,
+                    format!("Product {} not found", product_id),
+                ),
+                _ => (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()),
+            }
+        })?;
     Ok(Json(quantity))
 }
 
