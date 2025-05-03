@@ -133,13 +133,14 @@ pub async fn list_products(db: &PgPool, store_id: Uuid) -> Result<Vec<Product>, 
 pub async fn get_product_quantity(db: &PgPool, product_id: Uuid) -> Result<i32, sqlx::Error> {
     let quantity = sqlx::query_scalar!(
         r#"
-        SELECT get_product_quantity($1) AS quantity
+        SELECT quantity
+        FROM products
+        WHERE id = $1
         "#,
         product_id
     )
     .fetch_one(db)
-    .await?
-    .unwrap_or(0);
+    .await?;
 
     Ok(quantity)
 }
