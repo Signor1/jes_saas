@@ -1,5 +1,7 @@
 use crate::authentication::authentication::Claims;
-use crate::db::operations::{delete_store, get_all_stores, get_store_orders, update_store};
+use crate::db::operations::{
+    delete_store, get_all_stores, get_store_by_id, get_store_orders, update_store,
+};
 use crate::state::AppState;
 use crate::{add_product, create_store, get_product_quantity, list_products, Product};
 use crate::{AddProductRequest, CreateStoreRequest, Order, Store};
@@ -237,4 +239,15 @@ pub async fn get_all_stores_handler(
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
     Ok(Json(stores))
+}
+
+#[debug_handler]
+pub async fn get_store_by_id_handler(
+    Path(store_id): Path<Uuid>,
+    State(state): State<Arc<AppState>>,
+) -> Result<Json<Store>, (StatusCode, String)> {
+    let store = get_store_by_id(&state.db.pool, store_id)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    Ok(Json(store))
 }

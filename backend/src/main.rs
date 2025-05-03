@@ -73,6 +73,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .get(get_cart_handler)
                 .layer(auth_layer.clone()),
         )
+        .route("/store/:store_id", get(get_store_by_id_handler))
         .route("/checkout", post(checkout_handler).layer(auth_layer))
         .with_state(state);
 
