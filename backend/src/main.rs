@@ -1,7 +1,7 @@
 use crate::routes::store_handler::*;
 use axum::{
     body::Body,
-    http::{header, Request, Response, StatusCode},
+    http::{header, Method, Request, Response, StatusCode},
     middleware,
     response::IntoResponse,
     routing::{get, post, put},
@@ -25,43 +25,61 @@ mod error;
 mod store_test;
 mod user_test;
 
+// Custom CORS middleware
 async fn cors_middleware(req: Request<Body>, next: middleware::Next) -> impl IntoResponse {
-    let mut response = next.run(req).await;
+    let origin = {
+        req.headers()
+            .get(header::ORIGIN)
+            .and_then(|v| v.to_str().ok())
+            .map(|s| s.to_string())
+            .unwrap_or("*".to_string())
+    };
 
-    // Add CORS headers
-    response
-        .headers_mut()
-        .insert(header::ACCESS_CONTROL_ALLOW_ORIGIN, "*".parse().unwrap());
-    response.headers_mut().insert(
+    let is_preflight = req.method() == Method::OPTIONS;
+
+    let response = next.run(req).await;
+
+    if is_preflight {
+        return Response::builder()
+            .status(StatusCode::NO_CONTENT)
+            .header(header::ACCESS_CONTROL_ALLOW_ORIGIN, origin.as_str())
+            .header(
+                header::ACCESS_CONTROL_ALLOW_METHODS,
+                "GET, POST, PUT, DELETE, OPTIONS, PATCH",
+            )
+            .header(
+                header::ACCESS_CONTROL_ALLOW_HEADERS,
+                "Content-Type, Authorization, Accept, X-Requested-With",
+            )
+            .header(header::ACCESS_CONTROL_ALLOW_CREDENTIALS, "true")
+            .header(header::ACCESS_CONTROL_MAX_AGE, "86400") // 24 hours
+            .body(Body::empty())
+            .unwrap();
+    }
+
+    let mut response = response;
+    let headers = response.headers_mut();
+    headers.insert(header::ACCESS_CONTROL_ALLOW_ORIGIN, origin.parse().unwrap());
+    headers.insert(
         header::ACCESS_CONTROL_ALLOW_METHODS,
-        "GET, POST, PUT, DELETE, OPTIONS".parse().unwrap(),
+        "GET, POST, PUT, DELETE, OPTIONS, PATCH".parse().unwrap(),
     );
-    response
-        .headers_mut()
-        .insert(header::ACCESS_CONTROL_ALLOW_HEADERS, "*".parse().unwrap());
-    response.headers_mut().insert(
+    headers.insert(
+        header::ACCESS_CONTROL_ALLOW_HEADERS,
+        "Content-Type, Authorization, Accept, X-Requested-With"
+            .parse()
+            .unwrap(),
+    );
+    headers.insert(
         header::ACCESS_CONTROL_ALLOW_CREDENTIALS,
         "true".parse().unwrap(),
     );
+    headers.insert(
+        header::ACCESS_CONTROL_EXPOSE_HEADERS,
+        "Authorization".parse().unwrap(),
+    );
 
-    // Handle preflight OPTIONS requests
-    if response.status() == StatusCode::METHOD_NOT_ALLOWED
-        && response.headers().get(header::ALLOW).is_some()
-    {
-        Response::builder()
-            .status(StatusCode::OK)
-            .header(header::ACCESS_CONTROL_ALLOW_ORIGIN, "*")
-            .header(
-                header::ACCESS_CONTROL_ALLOW_METHODS,
-                "GET, POST, PUT, DELETE, OPTIONS",
-            )
-            .header(header::ACCESS_CONTROL_ALLOW_HEADERS, "*")
-            .header(header::ACCESS_CONTROL_ALLOW_CREDENTIALS, "true")
-            .body(Body::empty())
-            .unwrap()
-    } else {
-        response
-    }
+    response
 }
 
 #[tokio::main]
