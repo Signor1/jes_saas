@@ -177,7 +177,7 @@ export default function TeamPage() {
               <DialogHeader>
                 <DialogTitle>Invite Team Member</DialogTitle>
                 <DialogDescription>
-                  Send an invitation to join your team. They'll receive an email with instructions.
+                  Send an invitation to join your team. They&apos;ll receive an email with instructions.
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">

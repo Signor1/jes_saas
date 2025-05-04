@@ -42,6 +42,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
+import Image from "next/image";
 
 interface Store {
   id: string;
@@ -236,7 +237,7 @@ export default function StoresPage() {
                     <div className="flex items-center justify-between p-6">
                       <div className="flex items-center gap-4">
                         <div className="h-10 w-10 overflow-hidden rounded-md bg-muted">
-                          <img
+                          <Image
                             src={store.logo || "/placeholder.svg"}
                             alt={store.name}
                             className="h-full w-full object-cover"

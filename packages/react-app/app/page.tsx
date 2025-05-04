@@ -3,6 +3,7 @@ import { ArrowRight, BarChart3, CreditCard, Globe, Package, Settings, ShoppingBa
 
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import Image from "next/image"
 
 export default function Home() {
   return (
@@ -51,7 +52,7 @@ export default function Home() {
                   </Link>
                 </div>
               </div>
-              <img
+              <Image
                 src="/supermarket.webp"
                 width={550}
                 height={550}
@@ -87,7 +88,7 @@ export default function Home() {
                 </div>
                 <h3 className="mt-4 text-xl font-bold">Create Your Store</h3>
                 <p className="mt-2 text-muted-foreground">
-                  Add products, customize your store's appearance, and set your prices
+                  Add products, customize your store&apos;s appearance, and set your prices
                 </p>
               </div>
               <div className="flex flex-col items-center text-center">

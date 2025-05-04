@@ -31,6 +31,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { ShareStore } from "@/components/share-store"
 import { toast } from "sonner"
+import Image from "next/image"
 
 interface Store {
   id: string
@@ -114,12 +115,12 @@ export default function StoreDetailPage() {
         const updatedStores = stores.map((s: Store) =>
           s.id === id
             ? {
-                ...s,
-                name: formData.name,
-                description: formData.description,
-                isActive: formData.isActive,
-                logo: store.logo, // Use the updated logo if it was changed
-              }
+              ...s,
+              name: formData.name,
+              description: formData.description,
+              isActive: formData.isActive,
+              logo: store.logo, // Use the updated logo if it was changed
+            }
             : s,
         )
         localStorage.setItem("stores", JSON.stringify(updatedStores))
@@ -277,7 +278,7 @@ export default function StoreDetailPage() {
                         <Label htmlFor="logo">Store Logo</Label>
                         <div className="flex items-center gap-4">
                           <div className="h-20 w-20 rounded-md border overflow-hidden flex items-center justify-center bg-white">
-                            <img
+                            <Image
                               src={store.logo || "/leather.jpe"}
                               alt="Store logo"
                               className="max-h-full max-w-full object-contain"
@@ -312,7 +313,7 @@ export default function StoreDetailPage() {
                   <Card>
                     <CardHeader>
                       <CardTitle>Store Settings</CardTitle>
-                      <CardDescription>Configure your store's behavior and appearance.</CardDescription>
+                      <CardDescription>Configure your store&apos;s behavior and appearance.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="flex items-center justify-between">
@@ -330,7 +331,7 @@ export default function StoreDetailPage() {
                       <div className="flex items-center justify-between">
                         <div>
                           <h4 className="text-sm font-medium">Store URL</h4>
-                          <p className="text-xs text-muted-foreground">Your store's unique web address</p>
+                          <p className="text-xs text-muted-foreground">Your store&apos;s unique web address</p>
                         </div>
                         <div className="flex items-center gap-2">
                           <code className="rounded bg-muted px-2 py-1 text-xs">
@@ -369,7 +370,7 @@ export default function StoreDetailPage() {
                                 <div className="flex items-center justify-between border-b p-3 bg-background">
                                   <div className="flex items-center gap-2">
                                     <div className="h-8 w-8 rounded-md bg-primary/20 flex items-center justify-center">
-                                      <img
+                                      <Image
                                         src={store.logo || "/leather.jpe"}
                                         alt="Store logo"
                                         className="max-h-full max-w-full object-contain"
@@ -406,7 +407,7 @@ export default function StoreDetailPage() {
                                 <div className="flex items-center justify-between border-b p-3 bg-background">
                                   <div className="flex items-center gap-2">
                                     <div className="h-6 w-6 rounded-md bg-primary/20 flex items-center justify-center">
-                                      <img
+                                      <Image
                                         src={store.logo || "/leather.jpe"}
                                         alt="Store logo"
                                         className="max-h-full max-w-full object-contain"
@@ -458,7 +459,7 @@ export default function StoreDetailPage() {
                   <Card>
                     <CardHeader>
                       <CardTitle>Store Statistics</CardTitle>
-                      <CardDescription>Overview of your store's performance</CardDescription>
+                      <CardDescription>Overview of your store&apos;s performance</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="grid grid-cols-2 gap-4">

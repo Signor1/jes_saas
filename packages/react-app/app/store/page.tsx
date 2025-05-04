@@ -9,6 +9,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
+import Image from "next/image"
 
 
 const getStoreSettings = () => {
@@ -155,7 +156,7 @@ export default function StorePage() {
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto flex h-16 items-center justify-between">
           <div className="flex items-center gap-2">
-            <img
+            <Image
               src={storeSettings.logo || "/leatherBag.jpeg?height=40&width=40"}
               alt="Store logo"
               className="h-8 w-8 object-contain"
@@ -187,7 +188,7 @@ export default function StorePage() {
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                   {products.slice(0, 3).map((product) => (
                     <Card key={product.id} className="overflow-hidden">
-                      <img
+                      <Image
                         src={product.image || "/leatherBag.jpeg"}
                         alt={product.name}
                         width={200}
@@ -237,7 +238,7 @@ export default function StorePage() {
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {products.map((product) => (
                   <Card key={product.id} className="overflow-hidden">
-                    <img
+                    <Image
                       src={product.image || "/leatherBag.jpeg"}
                       alt={product.name}
                       width={200}
@@ -282,7 +283,7 @@ export default function StorePage() {
                           {cartItems.map((item) => (
                             <div key={item.id} className="flex items-center justify-between border-b pb-4">
                               <div className="flex items-center gap-4">
-                                <img
+                                <Image
                                   src={item.image || "/leatherBag.jpeg"}
                                   alt={item.name}
                                   width={60}
@@ -372,7 +373,7 @@ export default function StorePage() {
       <footer className="w-full border-t py-6">
         <div className="container mx-auto flex flex-col items-center justify-between gap-4 md:h-8 md:flex-row">
           <div className="flex items-center gap-2">
-            <img
+            <Image
               src={storeSettings.logo || "/leatherBag.jpeg?height=20&width=20"}
               alt="Store logo"
               className="h-5 w-5 object-contain"

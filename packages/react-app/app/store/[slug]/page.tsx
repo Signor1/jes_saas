@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { useNotifications } from "@/components/notifications"
 import { MotionDiv, MotionLi, MotionUl, fadeIn, itemFade, staggerContainer } from "@/components/animations/motion"
+import Image from "next/image"
 
 interface Store {
   id: string
@@ -136,7 +137,7 @@ export default function StorePage() {
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-2">
-            <img
+            <Image
               src={store.logo || "/leather.jpeg?height=40&width=40"}
               alt={store.name}
               className="h-8 w-8 rounded-md object-contain"
@@ -180,7 +181,7 @@ export default function StorePage() {
                 {products.map((product) => (
                   <MotionLi key={product.id} variants={itemFade}>
                     <Card className="overflow-hidden h-full flex flex-col">
-                      <img
+                      <Image
                         src={product.image || "/leather.jpeg"}
                         alt={product.name}
                         width={200}
@@ -240,7 +241,7 @@ export default function StorePage() {
                             <MotionLi key={item.id} variants={itemFade}>
                               <div className="flex items-center justify-between border-b pb-4">
                                 <div className="flex items-center gap-4">
-                                  <img
+                                  <Image
                                     src={item.image || "/leather.jpeg"}
                                     alt={item.name}
                                     width={60}
@@ -327,7 +328,7 @@ export default function StorePage() {
       <footer className="w-full border-t py-6">
         <div className="container flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row">
           <div className="flex items-center gap-2">
-            <img
+            <Image
               src={store.logo || "/leather.jpeg?height=20&width=20"}
               alt={store.name}
               className="h-5 w-5 object-contain"
