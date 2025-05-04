@@ -21,15 +21,15 @@ pub async fn create_store_handler(
     Extension(claims): Extension<Claims>,
     Json(payload): Json<CreateStoreRequest>,
 ) -> Result<Json<Store>, (StatusCode, String)> {
-    if claims.role != "store" {
-        return Err((
-            StatusCode::FORBIDDEN,
-            "Only store owners can create stores".to_string(),
-        ));
-    }
-    if claims.sub != payload.owner_address {
-        return Err((StatusCode::FORBIDDEN, "Invalid owner address".to_string()));
-    }
+    // if claims.role != "store" {
+    //     return Err((
+    //         StatusCode::FORBIDDEN,
+    //         "Only store owners can create stores".to_string(),
+    //     ));
+    // }
+    // if claims.sub != payload.owner_address {
+    //     return Err((StatusCode::FORBIDDEN, "Invalid owner address".to_string()));
+    // }
 
     let image_cid = if let Some(image) = payload.image.as_ref() {
         Some(
