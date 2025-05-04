@@ -1,6 +1,9 @@
 use crate::routes::store_handler::*;
 use axum::{
+    body::Body,
+    http::{header, Request, Response, StatusCode},
     middleware,
+    response::IntoResponse,
     routing::{get, post, put},
     Router,
 };
@@ -22,6 +25,45 @@ mod error;
 mod store_test;
 mod user_test;
 
+async fn cors_middleware(req: Request<Body>, next: middleware::Next) -> impl IntoResponse {
+    let mut response = next.run(req).await;
+
+    // Add CORS headers
+    response
+        .headers_mut()
+        .insert(header::ACCESS_CONTROL_ALLOW_ORIGIN, "*".parse().unwrap());
+    response.headers_mut().insert(
+        header::ACCESS_CONTROL_ALLOW_METHODS,
+        "GET, POST, PUT, DELETE, OPTIONS".parse().unwrap(),
+    );
+    response
+        .headers_mut()
+        .insert(header::ACCESS_CONTROL_ALLOW_HEADERS, "*".parse().unwrap());
+    response.headers_mut().insert(
+        header::ACCESS_CONTROL_ALLOW_CREDENTIALS,
+        "true".parse().unwrap(),
+    );
+
+    // Handle preflight OPTIONS requests
+    if response.status() == StatusCode::METHOD_NOT_ALLOWED
+        && response.headers().get(header::ALLOW).is_some()
+    {
+        Response::builder()
+            .status(StatusCode::OK)
+            .header(header::ACCESS_CONTROL_ALLOW_ORIGIN, "*")
+            .header(
+                header::ACCESS_CONTROL_ALLOW_METHODS,
+                "GET, POST, PUT, DELETE, OPTIONS",
+            )
+            .header(header::ACCESS_CONTROL_ALLOW_HEADERS, "*")
+            .header(header::ACCESS_CONTROL_ALLOW_CREDENTIALS, "true")
+            .body(Body::empty())
+            .unwrap()
+    } else {
+        response
+    }
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv::dotenv().ok();
@@ -35,6 +77,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         pinata_secret_key: std::env::var("PINATA_SECRET_KEY")
             .expect("PINATA_SECRET_KEY must be set"),
     });
+
     let auth_layer = middleware::from_fn_with_state(state.clone(), auth_middleware);
 
     let app = Router::new()
@@ -75,7 +118,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         )
         .route("/store/:store_id", get(get_store_by_id_handler))
         .route("/checkout", post(checkout_handler).layer(auth_layer))
-        .with_state(state);
+        .with_state(state)
+        .layer(middleware::from_fn(cors_middleware));
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
     info!("Listening on {}", addr);
