@@ -1,9 +1,7 @@
 use crate::routes::store_handler::*;
 use axum::{
-    body::Body,
-    http::{header, Method, Request, Response, StatusCode},
+    http::{header, HeaderName, Method},
     middleware,
-    response::IntoResponse,
     routing::{get, post, put},
     Router,
 };
@@ -24,63 +22,7 @@ use state::{AppState, AppStateDb};
 mod error;
 mod store_test;
 mod user_test;
-
-// Custom CORS middleware
-async fn cors_middleware(req: Request<Body>, next: middleware::Next) -> impl IntoResponse {
-    let origin = {
-        req.headers()
-            .get(header::ORIGIN)
-            .and_then(|v| v.to_str().ok())
-            .map(|s| s.to_string())
-            .unwrap_or("*".to_string())
-    };
-
-    let is_preflight = req.method() == Method::OPTIONS;
-
-    let response = next.run(req).await;
-
-    if is_preflight {
-        return Response::builder()
-            .status(StatusCode::NO_CONTENT)
-            .header(header::ACCESS_CONTROL_ALLOW_ORIGIN, origin.as_str())
-            .header(
-                header::ACCESS_CONTROL_ALLOW_METHODS,
-                "GET, POST, PUT, DELETE, OPTIONS, PATCH",
-            )
-            .header(
-                header::ACCESS_CONTROL_ALLOW_HEADERS,
-                "Content-Type, Authorization, Accept, X-Requested-With",
-            )
-            .header(header::ACCESS_CONTROL_ALLOW_CREDENTIALS, "true")
-            .header(header::ACCESS_CONTROL_MAX_AGE, "86400") // 24 hours
-            .body(Body::empty())
-            .unwrap();
-    }
-
-    let mut response = response;
-    let headers = response.headers_mut();
-    headers.insert(header::ACCESS_CONTROL_ALLOW_ORIGIN, origin.parse().unwrap());
-    headers.insert(
-        header::ACCESS_CONTROL_ALLOW_METHODS,
-        "GET, POST, PUT, DELETE, OPTIONS, PATCH".parse().unwrap(),
-    );
-    headers.insert(
-        header::ACCESS_CONTROL_ALLOW_HEADERS,
-        "Content-Type, Authorization, Accept, X-Requested-With"
-            .parse()
-            .unwrap(),
-    );
-    headers.insert(
-        header::ACCESS_CONTROL_ALLOW_CREDENTIALS,
-        "true".parse().unwrap(),
-    );
-    headers.insert(
-        header::ACCESS_CONTROL_EXPOSE_HEADERS,
-        "Authorization".parse().unwrap(),
-    );
-
-    response
-}
+use tower_http::cors::{Any, CorsLayer};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -95,6 +37,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         pinata_secret_key: std::env::var("PINATA_SECRET_KEY")
             .expect("PINATA_SECRET_KEY must be set"),
     });
+
+    let cors = CorsLayer::new()
+        .allow_origin(Any)
+        .allow_methods([
+            Method::GET,
+            Method::POST,
+            Method::PUT,
+            Method::DELETE,
+            Method::OPTIONS,
+            Method::PATCH,
+        ])
+        .allow_headers([
+            header::CONTENT_TYPE,
+            header::AUTHORIZATION,
+            header::ACCEPT,
+            HeaderName::from_static("x-requested-with"),
+        ])
+        .allow_credentials(true);
 
     let auth_layer = middleware::from_fn_with_state(state.clone(), auth_middleware);
 
@@ -137,7 +97,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/store/:store_id", get(get_store_by_id_handler))
         .route("/checkout", post(checkout_handler).layer(auth_layer))
         .with_state(state)
-        .layer(middleware::from_fn(cors_middleware));
+        .layer(cors);
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
     info!("Listening on {}", addr);
