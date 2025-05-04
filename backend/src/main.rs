@@ -22,7 +22,8 @@ use state::{AppState, AppStateDb};
 mod error;
 mod store_test;
 mod user_test;
-use tower_http::cors::{Any, CorsLayer};
+use http::HeaderValue;
+use tower_http::cors::{AllowOrigin, CorsLayer};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -39,7 +40,23 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     });
 
     let cors = CorsLayer::new()
-        .allow_origin(Any)
+        .allow_origin(AllowOrigin::predicate(
+            |origin: &HeaderValue, _req_parts| {
+                let origin_str = origin.to_str().unwrap_or_default();
+
+                if origin_str == "http://localhost:3000"
+                    || origin_str == "https://jes-saas.onrender.com"
+                {
+                    return true;
+                }
+
+                if origin_str.ends_with(".ngrok-free.app") {
+                    return true;
+                }
+
+                false
+            },
+        ))
         .allow_methods([
             Method::GET,
             Method::POST,
@@ -53,7 +70,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             header::AUTHORIZATION,
             header::ACCEPT,
             HeaderName::from_static("x-requested-with"),
-        ]);
+        ])
+        .allow_credentials(true);
 
     let auth_layer = middleware::from_fn_with_state(state.clone(), auth_middleware);
 
