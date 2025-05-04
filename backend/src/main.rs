@@ -53,8 +53,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             header::AUTHORIZATION,
             header::ACCEPT,
             HeaderName::from_static("x-requested-with"),
-        ])
-        .allow_credentials(true);
+        ]);
 
     let auth_layer = middleware::from_fn_with_state(state.clone(), auth_middleware);
 
