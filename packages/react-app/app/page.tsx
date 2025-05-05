@@ -1,10 +1,69 @@
-import Link from "next/link"
-import { ArrowRight, BarChart3, CreditCard, Globe, Package, Settings, ShoppingBag, Users } from "lucide-react"
+"use client";
 
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import Link from "next/link";
+import {
+  ArrowRight,
+  BarChart3,
+  CreditCard,
+  Globe,
+  Package,
+  Settings,
+  ShoppingBag,
+  Users,
+} from "lucide-react";
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useAccount, useConnect } from "wagmi";
+import { useEffect, useState } from "react";
+import { injected } from "@wagmi/connectors";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { useAPI } from "@/contexts/jes-context";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+  const [hideConnectBtn, setHideConnectBtn] = useState(false);
+  const { connect } = useConnect();
+  const { login } = useAPI();
+  const { address } = useAccount();
+  const router = useRouter();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      const payload = {
+        wallet_address: address,
+      };
+      console.log(payload);
+      const response = await login(payload);
+      if (response && response.token) {
+        toast.success("Account Logged in!");
+      }
+      router.push("/dashboard");
+    } catch (error) {
+      toast(
+        "Error, There was an error creating your account. Please try again."
+      );
+    } finally {
+      console.log("done");
+    }
+  };
+
+  useEffect(() => {
+    if (window.ethereum && window.ethereum.isMiniPay) {
+      setHideConnectBtn(true);
+      connect({ connector: injected({ target: "metaMask" }) });
+    }
+  }, []);
+
   return (
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 ">
@@ -14,12 +73,20 @@ export default function Home() {
             <span className="text-xl font-bold">JES-Storefront</span>
           </div>
           <div className="flex items-center gap-4">
-            <Link href="/login">
-              <Button variant="outline">Log in</Button>
-            </Link>
+            <Button variant="outline" onClick={handleSubmit}>
+              Log in
+            </Button>
             <Link href="/signup">
               <Button>Sign up</Button>
             </Link>
+            {!hideConnectBtn && (
+              <ConnectButton
+                showBalance={{
+                  smallScreen: true,
+                  largeScreen: false,
+                }}
+              />
+            )}
           </div>
         </div>
       </header>
@@ -33,8 +100,9 @@ export default function Home() {
                     Create your online store in minutes
                   </h1>
                   <p className="max-w-[600px] text-muted-foreground md:text-xl">
-                    JES-Storefront lets you build and share your own online store instantly. Add products, customize your
-                    storefront, and start selling today - no technical skills required.
+                    JES-Storefront lets you build and share your own online
+                    store instantly. Add products, customize your storefront,
+                    and start selling today - no technical skills required.
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
@@ -61,11 +129,16 @@ export default function Home() {
             </div>
           </div>
         </section>
-        <section id="how-it-works" className="w-full py-12 md:py-24 lg:py-32 bg-muted/40">
+        <section
+          id="how-it-works"
+          className="w-full py-12 md:py-24 lg:py-32 bg-muted/40"
+        >
           <div className="container mx-auto  px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
-                <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">How It Works</h2>
+                <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">
+                  How It Works
+                </h2>
                 <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
                   Create, customize, and share your store in three simple steps
                 </p>
@@ -78,7 +151,8 @@ export default function Home() {
                 </div>
                 <h3 className="mt-4 text-xl font-bold">Sign Up</h3>
                 <p className="mt-2 text-muted-foreground">
-                  Create your account in seconds and get access to all JES-Storefront features
+                  Create your account in seconds and get access to all
+                  JES-Storefront features
                 </p>
               </div>
               <div className="flex flex-col items-center text-center">
@@ -87,7 +161,8 @@ export default function Home() {
                 </div>
                 <h3 className="mt-4 text-xl font-bold">Create Your Store</h3>
                 <p className="mt-2 text-muted-foreground">
-                  Add products, customize your store's appearance, and set your prices
+                  Add products, customize your store&apos;s appearance, and set your
+                  prices
                 </p>
               </div>
               <div className="flex flex-col items-center text-center">
@@ -96,7 +171,8 @@ export default function Home() {
                 </div>
                 <h3 className="mt-4 text-xl font-bold">Share & Sell</h3>
                 <p className="mt-2 text-muted-foreground">
-                  Share your unique store link with customers and start receiving orders
+                  Share your unique store link with customers and start
+                  receiving orders
                 </p>
               </div>
             </div>
@@ -106,9 +182,12 @@ export default function Home() {
           <div className="container mx-auto px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
-                <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">Key Features</h2>
+                <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">
+                  Key Features
+                </h2>
                 <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  Everything you need to run your business and accept payments online
+                  Everything you need to run your business and accept payments
+                  online
                 </p>
               </div>
             </div>
@@ -117,12 +196,15 @@ export default function Home() {
                 <CardHeader>
                   <Globe className="h-10 w-10 text-primary mb-2" />
                   <CardTitle>Multiple Storefronts</CardTitle>
-                  <CardDescription>Create and manage multiple stores from a single dashboard</CardDescription>
+                  <CardDescription>
+                    Create and manage multiple stores from a single dashboard
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <p>
-                    Each store gets its own unique URL that you can share with customers. Perfect for managing different
-                    brands or product lines.
+                    Each store gets its own unique URL that you can share with
+                    customers. Perfect for managing different brands or product
+                    lines.
                   </p>
                 </CardContent>
               </Card>
@@ -130,12 +212,15 @@ export default function Home() {
                 <CardHeader>
                   <Package className="h-10 w-10 text-primary mb-2" />
                   <CardTitle>Inventory Management</CardTitle>
-                  <CardDescription>Track stock levels and get low inventory alerts</CardDescription>
+                  <CardDescription>
+                    Track stock levels and get low inventory alerts
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <p>
-                    Automatically track product inventory, receive notifications when stock is low, and prevent
-                    overselling with real-time updates.
+                    Automatically track product inventory, receive notifications
+                    when stock is low, and prevent overselling with real-time
+                    updates.
                   </p>
                 </CardContent>
               </Card>
@@ -143,11 +228,15 @@ export default function Home() {
                 <CardHeader>
                   <CreditCard className="h-10 w-10 text-primary mb-2" />
                   <CardTitle>Secure Payments</CardTitle>
-                  <CardDescription>Accept payments via JES-Storefront with a simple two-step approval process</CardDescription>
+                  <CardDescription>
+                    Accept payments via JES-Storefront with a simple two-step
+                    approval process
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <p>
-                    Customers can pay directly with their JES-Storefront accounts. All transactions are secure and encrypted.
+                    Customers can pay directly with their JES-Storefront
+                    accounts. All transactions are secure and encrypted.
                   </p>
                 </CardContent>
               </Card>
@@ -155,12 +244,14 @@ export default function Home() {
                 <CardHeader>
                   <BarChart3 className="h-10 w-10 text-primary mb-2" />
                   <CardTitle>Analytics & Insights</CardTitle>
-                  <CardDescription>Track sales, customer behavior, and store performance</CardDescription>
+                  <CardDescription>
+                    Track sales, customer behavior, and store performance
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <p>
-                    Get detailed reports on your sales, popular products, and customer demographics to optimize your
-                    business.
+                    Get detailed reports on your sales, popular products, and
+                    customer demographics to optimize your business.
                   </p>
                 </CardContent>
               </Card>
@@ -168,12 +259,14 @@ export default function Home() {
                 <CardHeader>
                   <Settings className="h-10 w-10 text-primary mb-2" />
                   <CardTitle>Customization</CardTitle>
-                  <CardDescription>Brand your storefront with your logo, colors, and messaging</CardDescription>
+                  <CardDescription>
+                    Brand your storefront with your logo, colors, and messaging
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <p>
-                    Create a unique shopping experience that reflects your brand identity and resonates with your
-                    customers.
+                    Create a unique shopping experience that reflects your brand
+                    identity and resonates with your customers.
                   </p>
                 </CardContent>
               </Card>
@@ -181,26 +274,35 @@ export default function Home() {
                 <CardHeader>
                   <Users className="h-10 w-10 text-primary mb-2" />
                   <CardTitle>Customer Management</CardTitle>
-                  <CardDescription>Build relationships with your customers</CardDescription>
+                  <CardDescription>
+                    Build relationships with your customers
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <p>
-                    Track customer orders, manage communications, and build a loyal customer base with integrated tools.
+                    Track customer orders, manage communications, and build a
+                    loyal customer base with integrated tools.
                   </p>
                 </CardContent>
               </Card>
             </div>
           </div>
         </section>
-        <section id="sharing" className="w-full py-12 md:py-24 lg:py-32 bg-muted/40">
+        <section
+          id="sharing"
+          className="w-full py-12 md:py-24 lg:py-32 bg-muted/40"
+        >
           <div className="container mx-auto px-4 md:px-6">
             <div className="grid gap-6 lg:grid-cols-2 lg:gap-12">
               <div className="flex flex-col justify-center space-y-4">
                 <div className="space-y-2">
-                  <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">Share Your Store Anywhere</h2>
+                  <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">
+                    Share Your Store Anywhere
+                  </h2>
                   <p className="max-w-[600px] text-muted-foreground md:text-xl/relaxed">
-                    Your JES-Storefront store comes with a unique, shareable link that works everywhere. Share it on social
-                    media, in emails, or via messaging apps to reach your customers.
+                    Your JES-Storefront store comes with a unique, shareable
+                    link that works everywhere. Share it on social media, in
+                    emails, or via messaging apps to reach your customers.
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
@@ -251,7 +353,14 @@ export default function Home() {
                       strokeLinejoin="round"
                       className="h-4 w-4"
                     >
-                      <rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect>
+                      <rect
+                        width="20"
+                        height="20"
+                        x="2"
+                        y="2"
+                        rx="5"
+                        ry="5"
+                      ></rect>
                       <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
                       <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line>
                     </svg>
@@ -304,9 +413,12 @@ export default function Home() {
           <div className="container mx-auto px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
-                <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">Ready to Get Started?</h2>
+                <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">
+                  Ready to Get Started?
+                </h2>
                 <p className="max-w-[600px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  Join thousands of businesses already using JES-Storefront to grow their revenue
+                  Join thousands of businesses already using JES-Storefront to
+                  grow their revenue
                 </p>
               </div>
               <div className="flex flex-col gap-2 min-[400px]:flex-row">
@@ -330,21 +442,32 @@ export default function Home() {
         <div className="container mx-auto flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row">
           <div className="flex items-center gap-2">
             <CreditCard className="h-5 w-5 text-primary" />
-            <p className="text-sm text-muted-foreground">© 2025 JES-Storefront. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">
+              © 2025 JES-Storefront. All rights reserved.
+            </p>
           </div>
           <div className="flex gap-4">
-            <Link href="#" className="text-sm text-muted-foreground underline underline-offset-4">
+            <Link
+              href="#"
+              className="text-sm text-muted-foreground underline underline-offset-4"
+            >
               Terms of Service
             </Link>
-            <Link href="#" className="text-sm text-muted-foreground underline underline-offset-4">
+            <Link
+              href="#"
+              className="text-sm text-muted-foreground underline underline-offset-4"
+            >
               Privacy Policy
             </Link>
-            <Link href="#" className="text-sm text-muted-foreground underline underline-offset-4">
+            <Link
+              href="#"
+              className="text-sm text-muted-foreground underline underline-offset-4"
+            >
               Contact
             </Link>
           </div>
         </div>
       </footer>
     </div>
-  )
+  );
 }

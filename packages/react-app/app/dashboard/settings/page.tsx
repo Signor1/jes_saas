@@ -133,7 +133,7 @@ export default function SettingsPage() {
                     <Card>
                       <CardHeader>
                         <CardTitle>Store Identity</CardTitle>
-                        <CardDescription>Customize your store's name, description, and logo.</CardDescription>
+                        <CardDescription>Customize your store&apos;s name, description, and logo.</CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
                         <div className="space-y-2">
@@ -239,7 +239,7 @@ export default function SettingsPage() {
                     <Card>
                       <CardHeader>
                         <CardTitle>Color Scheme</CardTitle>
-                        <CardDescription>Customize your store's colors to match your brand.</CardDescription>
+                        <CardDescription>Customize your store&apos;s colors to match your brand.</CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-6">
                         <div className="space-y-2">

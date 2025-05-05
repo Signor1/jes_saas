@@ -8,14 +8,9 @@ import {
   Edit,
   ExternalLink,
   Globe,
-  Home,
   Loader2,
-  Package,
   Plus,
-  Settings,
-  ShoppingCart,
   Trash2,
-  Users,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -42,37 +37,59 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
+import { useAPI } from "@/contexts/jes-context";
+import { useAccount } from "wagmi";
 
 interface Store {
   id: string;
-  name: string;
-  slug: string;
+  store_name: string;
+  slug?: string;
   description: string;
-  logo: string;
-  isActive: boolean;
-  createdAt: string;
+  image_cid: string;
+  isActive?: boolean;
+  createdAt?: string;
+  owner_address: string;
 }
 
 export default function StoresPage() {
   const router = useRouter();
+  const { address } = useAccount();
+  const { getStores, createStore, updateStore, loading, error } = useAPI();
   const [stores, setStores] = useState<Store[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newStore, setNewStore] = useState({
-    name: "",
+    store_name: "",
     description: "",
+    owner_address: address,
+    image_cid: "",
   });
 
   useEffect(() => {
-    // In a real app, this would be an API call to fetch stores
-    // For demo purposes, we'll use localStorage
-    const fetchStores = () => {
-      const storedStores = localStorage.getItem("stores");
-      if (storedStores) {
-        setStores(JSON.parse(storedStores));
+    const fetchStores = async () => {
+      try {
+        const data = await getStores();
+        // Map API response to our store interface
+        if (data && Array.isArray(data)) {
+          const formattedStores = data.map(store => ({
+            ...store,
+            isActive: store.isActive !== undefined ? store.isActive : true,
+            slug: store.id, 
+            createdAt: store.createdAt || new Date().toISOString()
+          }));
+
+          const userStores = formattedStores.filter(store => store.owner_address === address);
+          setStores(userStores);
+        } else {
+          setStores([]);
+        }
+      } catch (err) {
+        console.error("Failed to fetch stores:", err);
+        toast.error("Failed to load stores. Please try again.");
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
 
     fetchStores();
@@ -82,53 +99,82 @@ export default function StoresPage() {
     setIsCreating(true);
 
     try {
-      // In a real app, this would be an API call to create a store
-      // For demo purposes, we'll update localStorage
-      const newStoreData: Store = {
-        id: "store_" + Math.random().toString(36).substring(2, 9),
-        name: newStore.name,
-        slug: newStore.name.toLowerCase().replace(/\s+/g, "-"),
-        description:
-          newStore.description ||
-          "Welcome to my store. Find great products at amazing prices!",
-        logo: "/placeholder.svg?height=80&width=80",
-        isActive: true,
-        createdAt: new Date().toISOString(),
+      // Format the new store data for the API
+      const storeData = {
+        store_name: newStore.store_name,
+        description: newStore.description || "Welcome to my store. Find great products at amazing prices!",
+        image_cid:"https://res.cloudinary.com/dnohqlmjc/image/upload/v1742633486/event-1_kspr0f.png",
+        owner_address: newStore.owner_address,
       };
 
-      const updatedStores = [...stores, newStoreData];
-      setStores(updatedStores);
-      localStorage.setItem("stores", JSON.stringify(updatedStores));
+      // Create the store using the API
+      const response = await createStore(storeData);
 
-      toast.success("Store created!");
+      // If successful, add the new store to the state
+      const newStoreData: Store = {
+        id: response?.id || `store_${Math.random().toString(36).substring(2, 9)}`,
+        store_name: storeData.store_name,
+        slug: storeData.store_name.toLowerCase().replace(/\s+/g, "-"),
+        description: storeData.description,
+        image_cid: storeData.image_cid,
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        owner_address: storeData.owner_address as `0x${string}`,
+      };
 
-      setNewStore({ name: "", description: "" });
+      setStores(prevStores => [...prevStores, newStoreData]);
+      toast.success("Store created successfully!");
+
+      // Reset the form and close the dialog
+      setNewStore({
+        store_name: "",
+        description: "",
+        owner_address: "" as `0x${string}`,
+        image_cid: "",
+      });
       setIsDialogOpen(false);
-    } catch (error) {
+    } catch (err) {
+      console.error("Failed to create store:", err);
       toast.error("There was an error creating your store. Please try again.");
     } finally {
       setIsCreating(false);
     }
   };
 
-  const toggleStoreStatus = (storeId: string) => {
-    const updatedStores = stores.map((store) =>
-      store.id === storeId ? { ...store, isActive: !store.isActive } : store
-    );
-    setStores(updatedStores);
-    localStorage.setItem("stores", JSON.stringify(updatedStores));
+  const toggleStoreStatus = async (store: Store) => {
+    try {
+      const updatedStore = { ...store, isActive: !store.isActive };
+      
+      // Call the API to update the store
+      await updateStore(store.id, {
+        store_name: store.store_name,
+        description: store.description,
+        image_cid: store.image_cid,
+        owner_address: store.owner_address,
+        // Add any other fields that need to be sent for updates
+      });
 
-    const store = updatedStores.find((s) => s.id === storeId);
-    toast.success(store?.isActive ? "Store activated" : "Store deactivated");
+      // Update the local state
+      setStores(stores.map(s => s.id === store.id ? updatedStore : s));
+      
+      toast.success(updatedStore.isActive ? "Store activated" : "Store deactivated");
+    } catch (err) {
+      console.error("Failed to update store status:", err);
+      toast.error("Failed to update store status. Please try again.");
+    }
   };
 
-  const deleteStore = (storeId: string) => {
-    const storeToDelete = stores.find((store) => store.id === storeId);
-    const updatedStores = stores.filter((store) => store.id !== storeId);
-    setStores(updatedStores);
-    localStorage.setItem("stores", JSON.stringify(updatedStores));
-
-    toast.error("Store deleted");
+  const deleteStore = async (storeId: string) => {
+    // In a real app, you would call an API to delete the store
+    // Since we don't have that endpoint in our context yet, we'll just update the UI
+    try {
+      // Remove from local state
+      setStores(stores.filter(store => store.id !== storeId));
+      toast.success("Store deleted");
+    } catch (err) {
+      console.error("Failed to delete store:", err);
+      toast.error("Failed to delete store. Please try again.");
+    }
   };
 
   const copyStoreUrl = (slug: string) => {
@@ -137,9 +183,38 @@ export default function StoresPage() {
     toast("URL copied!");
   };
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setNewStore(prev => ({
+          ...prev,
+          image_cid: reader.result as string
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Show error state if API error occurs
+  if (error && !isLoading) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-lg font-semibold text-red-600">Error loading stores</h2>
+          <p className="mt-2 text-muted-foreground">{error}</p>
+          <Button className="mt-4" onClick={() => window.location.reload()}>
+            Try Again
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen flex-col">
-      <div className="flex  flex-col">
+      <div className="flex flex-col">
         <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:px-6">
           <Link href="/dashboard" className="lg:hidden">
             <CreditCard className="h-6 w-6" />
@@ -165,13 +240,13 @@ export default function StoresPage() {
               </DialogHeader>
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Store Name</Label>
+                  <Label htmlFor="store_name">Store Name</Label>
                   <Input
-                    id="name"
+                    id="store_name"
                     placeholder="My Awesome Store"
-                    value={newStore.name}
+                    value={newStore.store_name}
                     onChange={(e) =>
-                      setNewStore({ ...newStore, name: e.target.value })
+                      setNewStore({ ...newStore, store_name: e.target.value })
                     }
                   />
                 </div>
@@ -186,6 +261,33 @@ export default function StoresPage() {
                     }
                   />
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="owner_address">Owner Address (Wallet)</Label>
+                  <Input
+                    id="owner_address"
+                    placeholder="0x..."
+                    value={address}
+                    disabled
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="image">Store Logo</Label>
+                  <Input
+                    id="image"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                  />
+                  {newStore.image_cid && (
+                    <div className="mt-2 border rounded p-2 flex justify-center">
+                      <img
+                        src={newStore.image_cid}
+                        alt="Store logo preview"
+                        className="h-20 w-20 object-cover"
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
               <DialogFooter>
                 <Button
@@ -196,9 +298,9 @@ export default function StoresPage() {
                 </Button>
                 <Button
                   onClick={handleCreateStore}
-                  disabled={!newStore.name || isCreating}
+                  disabled={!newStore.store_name || !newStore.owner_address || isCreating}
                 >
-                  {isCreating ? (
+                  {isCreating || loading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Creating...
@@ -212,7 +314,7 @@ export default function StoresPage() {
           </Dialog>
         </header>
         <main className="flex-1 overflow-auto p-4 lg:p-6">
-          {isLoading ? (
+          {isLoading || loading ? (
             <div className="flex h-[200px] items-center justify-center">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
@@ -237,18 +339,18 @@ export default function StoresPage() {
                       <div className="flex items-center gap-4">
                         <div className="h-10 w-10 overflow-hidden rounded-md bg-muted">
                           <img
-                            src={store.logo || "/placeholder.svg"}
-                            alt={store.name}
+                            src={`https://ipfs.io/ipfs/${store.image_cid}`}
+                            alt={store.store_name}
                             className="h-full w-full object-cover"
                           />
                         </div>
                         <div>
                           <CardTitle className="text-base">
-                            {store.name}
+                            {store.store_name}
                           </CardTitle>
                           <CardDescription className="text-xs">
                             Created{" "}
-                            {new Date(store.createdAt).toLocaleDateString()}
+                            {new Date(store.createdAt || Date.now()).toLocaleDateString()}
                           </CardDescription>
                         </div>
                       </div>
@@ -263,13 +365,13 @@ export default function StoresPage() {
                         <h3 className="text-sm font-medium">Store URL</h3>
                         <div className="mt-1 flex items-center gap-2">
                           <code className="rounded bg-muted px-2 py-1 text-xs">
-                            {window.location.origin}/store/{store.slug}
+                            {window.location.origin}/store/{store.slug || store.store_name?.toLowerCase().replace(/\s+/g, "-")}
                           </code>
                           <Button
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8"
-                            onClick={() => copyStoreUrl(store.slug)}
+                            onClick={() => copyStoreUrl(store.slug || store.store_name?.toLowerCase().replace(/\s+/g, "-") || '')}
                           >
                             <ExternalLink className="h-4 w-4" />
                             <span className="sr-only">Copy URL</span>
@@ -281,7 +383,7 @@ export default function StoresPage() {
                         <div className="mt-2 flex items-center gap-2">
                           <Switch
                             checked={store.isActive}
-                            onCheckedChange={() => toggleStoreStatus(store.id)}
+                            onCheckedChange={() => toggleStoreStatus(store)}
                             id={`store-status-${store.id}`}
                           />
                           <Label htmlFor={`store-status-${store.id}`}>
@@ -291,6 +393,16 @@ export default function StoresPage() {
                           </Label>
                         </div>
                       </div>
+                      {store.owner_address && (
+                        <div>
+                          <h3 className="text-sm font-medium">Owner Address</h3>
+                          <div className="mt-1">
+                            <code className="rounded bg-muted px-2 py-1 text-xs">
+                              {`${store.owner_address.substring(0, 10)}...${store.owner_address.substring(store.owner_address.length - 6)}`}
+                            </code>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                   <CardFooter className="flex justify-between border-t p-6">
@@ -302,7 +414,7 @@ export default function StoresPage() {
                     </Button>
                     <div className="flex gap-2">
                       <Button variant="outline" size="sm" asChild>
-                        <Link href={`/store/${store.slug}`} target="_blank">
+                        <Link href={`/store/${store.id}`} target="_blank">
                           <ExternalLink className="mr-2 h-4 w-4" />
                           View
                         </Link>

@@ -88,7 +88,7 @@ export default function DeliveryPage() {
                 <Card>
                   <CardHeader>
                     <CardTitle>Delivery Configuration</CardTitle>
-                    <CardDescription>Configure your store's delivery settings.</CardDescription>
+                    <CardDescription>Configure your store&apos;s delivery settings.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <div className="flex items-center justify-between">

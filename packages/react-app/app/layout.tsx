@@ -1,6 +1,9 @@
-import '@/styles/globals.css';
+"use client";
 
-import { AppProvider } from '@/providers/AppProvider';
+import "@/styles/globals.css";
+
+import { AppProvider } from "@/providers/AppProvider";
+import { APIProvider } from "@/contexts/jes-context";
 
 export default function RootLayout({
   children,
@@ -10,7 +13,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body>
-        <AppProvider>{children}</AppProvider>
+        <AppProvider>
+          <APIProvider>{children}</APIProvider>
+        </AppProvider>
       </body>
     </html>
   );

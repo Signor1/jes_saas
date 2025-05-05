@@ -140,7 +140,7 @@ export default function NotificationsPage() {
                       <div className="space-y-0.5">
                         <Label htmlFor="email-weekly-report">Weekly Report</Label>
                         <p className="text-sm text-muted-foreground">
-                          Receive a weekly summary of your store's performance.
+                          Receive a weekly summary of your store&apos;s performance.
                         </p>
                       </div>
                       <Switch
@@ -387,7 +387,7 @@ export default function NotificationsPage() {
                     </SelectContent>
                   </Select>
                   <p className="text-xs text-muted-foreground">
-                    You won't receive SMS notifications during quiet hours.
+                    You won&apos;t receive SMS notifications during quiet hours.
                   </p>
                 </div>
               </CardContent>

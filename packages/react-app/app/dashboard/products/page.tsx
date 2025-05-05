@@ -1,12 +1,18 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Edit, MoreHorizontal, Plus, Search, Trash } from "lucide-react"
-import Link from "next/link"
+import { useEffect, useState } from "react";
+import { Edit, MoreHorizontal, Plus, Search, Trash } from "lucide-react";
+import Link from "next/link";
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,10 +20,17 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import { PageTransition } from "@/components/animations/page-transition"
+} from "@/components/ui/dropdown-menu";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { PageTransition } from "@/components/animations/page-transition";
 import {
   Dialog,
   DialogContent,
@@ -26,116 +39,135 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { toast } from "sonner"
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
+import { useAPI } from "@/contexts/jes-context";
+import { useAccount } from "wagmi";
+import {
+  Select,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { SelectContent } from "@radix-ui/react-select";
 
 export default function ProductsPage() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [isAddingProduct, setIsAddingProduct] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isAddingProduct, setIsAddingProduct] = useState(false);
   const [newProduct, setNewProduct] = useState({
     name: "",
     description: "",
     price: "",
-    category: "",
+    image: "",
     stock: "",
-  })
+  });
+  const [storeId, setStoreId] = useState("");
+  const [stores, setStores] = useState<any[]>([]);
+  const { addProduct, getStores } = useAPI();
+  const { address } = useAccount();
+
+  useEffect(() => {
+    const fetchStores = async () => {
+      try {
+        const data = await getStores();
+        // Map API response to our store interface
+        if (data && Array.isArray(data)) {
+          const formattedStores = data.map((store) => ({
+            ...store,
+            isActive: store.isActive !== undefined ? store.isActive : true,
+            slug: store.id,
+            createdAt: store.createdAt || new Date().toISOString(),
+          }));
+
+          const userStores = formattedStores.filter(
+            (store) => store.owner_address === address
+          );
+          setStores(userStores);
+        } else {
+          setStores([]);
+        }
+      } catch (err) {
+        console.error("Failed to fetch stores:", err);
+        toast.error("Failed to load stores. Please try again.");
+      } finally {
+        console.log("done");
+      }
+    };
+
+    fetchStores();
+  }, []);
 
   // Sample products data
-  const products = [
-    {
-      id: "PROD-001",
-      name: "Premium T-Shirt",
-      description: "High-quality cotton t-shirt with logo",
-      price: 29.99,
-      category: "Clothing",
-      stock: 45,
-      status: "In Stock",
-    },
-    {
-      id: "PROD-002",
-      name: "Wireless Earbuds",
-      description: "Bluetooth earbuds with noise cancellation",
-      price: 49.99,
-      category: "Electronics",
-      stock: 32,
-      status: "In Stock",
-    },
-    {
-      id: "PROD-003",
-      name: "Leather Wallet",
-      description: "Genuine leather wallet with multiple card slots",
-      price: 29.99,
-      category: "Accessories",
-      stock: 18,
-      status: "Low Stock",
-    },
-    {
-      id: "PROD-004",
-      name: "Fitness Tracker",
-      description: "Water-resistant fitness tracker with heart rate monitor",
-      price: 69.99,
-      category: "Electronics",
-      stock: 0,
-      status: "Out of Stock",
-    },
-    {
-      id: "PROD-005",
-      name: "Phone Case",
-      description: "Protective case for smartphones",
-      price: 19.99,
-      category: "Accessories",
-      stock: 56,
-      status: "In Stock",
-    },
-  ]
+  const products: any[] = [];
 
   const filteredProducts = products.filter(
     (product) =>
       product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.category.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
+      product.description.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setNewProduct((prev) => ({
+          ...prev,
+          image: reader.result as string,
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
-  const handleAddProduct = () => {
+  const handleAddProduct = async () => {
     // Validate form
     if (!newProduct.name || !newProduct.price) {
-      toast.error("Missing information")
-      return
+      toast.error("Missing information");
+      return;
     }
+    const reponse = await addProduct(storeId, {
+      product_name: newProduct.name,
+      description: newProduct.description,
+      price: newProduct.price,
+      image: newProduct.image,
+      quantity: Number(newProduct.stock),
+    });
+
+    console.log(reponse);
 
     // Add product logic would go here
-    toast.success("Product added")
+    toast.success("Product added");
 
     // Reset form
     setNewProduct({
       name: "",
       description: "",
       price: "",
-      category: "",
+      image: "",
       stock: "",
-    })
-    setIsAddingProduct(false)
-  }
+    });
+    setIsAddingProduct(false);
+  };
 
   const handleDeleteProduct = (productId: string) => {
     // Delete product logic would go here
-    toast.success("Product deleted")
-  }
+    toast.success("Product deleted");
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "In Stock":
-        return <Badge className="bg-green-500">In Stock</Badge>
+        return <Badge className="bg-green-500">In Stock</Badge>;
       case "Low Stock":
-        return <Badge className="bg-amber-500">Low Stock</Badge>
+        return <Badge className="bg-amber-500">Low Stock</Badge>;
       case "Out of Stock":
-        return <Badge className="bg-red-500">Out of Stock</Badge>
+        return <Badge className="bg-red-500">Out of Stock</Badge>;
       default:
-        return <Badge>{status}</Badge>
+        return <Badge>{status}</Badge>;
     }
-  }
+  };
 
   return (
     <PageTransition>
@@ -143,7 +175,9 @@ export default function ProductsPage() {
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Products</h1>
-            <p className="text-muted-foreground">Manage your product inventory and listings.</p>
+            <p className="text-muted-foreground">
+              Manage your product inventory and listings.
+            </p>
           </div>
           <div className="flex flex-col gap-2 md:flex-row">
             <div className="relative w-full md:w-64">
@@ -166,7 +200,9 @@ export default function ProductsPage() {
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Add New Product</DialogTitle>
-                  <DialogDescription>Add a new product to your inventory.</DialogDescription>
+                  <DialogDescription>
+                    Add a new product to your inventory.
+                  </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div className="grid gap-2">
@@ -174,9 +210,33 @@ export default function ProductsPage() {
                     <Input
                       id="name"
                       value={newProduct.name}
-                      onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
+                      onChange={(e) =>
+                        setNewProduct({ ...newProduct, name: e.target.value })
+                      }
                       placeholder="Enter product name"
                     />
+                  </div>
+            
+                    <div className="grid gap-2">
+                      <Label htmlFor="store">
+                        Pick store to upload product to
+                      </Label>
+                      <Select
+                        value={storeId}
+                        onValueChange={(value) => setStoreId(value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a store" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {stores.map((store) => (
+                            <SelectItem key={store.id} value={store.id}>
+                              {store.store_name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="description">Description</Label>
@@ -210,19 +270,23 @@ export default function ProductsPage() {
                         placeholder="0.00"
                       />
                     </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="category">Category</Label>
+                    <div className="space-y-2">
+                      <Label htmlFor="image">Product image</Label>
                       <Input
-                        id="category"
-                        value={newProduct.category}
-                        onChange={(e) =>
-                          setNewProduct({
-                            ...newProduct,
-                            category: e.target.value,
-                          })
-                        }
-                        placeholder="e.g., Electronics"
+                        id="image"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
                       />
+                      {newProduct.image && (
+                        <div className="mt-2 border rounded p-2 flex justify-center">
+                          <img
+                            src={newProduct.image}
+                            alt="Store logo preview"
+                            className="h-20 w-20 object-cover"
+                          />
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="grid gap-2">
@@ -241,9 +305,11 @@ export default function ProductsPage() {
                       placeholder="0"
                     />
                   </div>
-                </div>
                 <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsAddingProduct(false)}>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsAddingProduct(false)}
+                  >
                     Cancel
                   </Button>
                   <Button onClick={handleAddProduct}>Add Product</Button>
@@ -256,7 +322,9 @@ export default function ProductsPage() {
         <Card>
           <CardHeader>
             <CardTitle>Product Inventory</CardTitle>
-            <CardDescription>You have {products.length} products in your inventory.</CardDescription>
+            <CardDescription>
+              You have {products.length} products in your inventory.
+            </CardDescription>
           </CardHeader>
           <CardContent className="px-0 sm:px-6">
             <div className="overflow-auto">
@@ -274,7 +342,10 @@ export default function ProductsPage() {
                 <TableBody>
                   {filteredProducts.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                      <TableCell
+                        colSpan={6}
+                        className="h-24 text-center text-muted-foreground"
+                      >
                         No products found.
                       </TableCell>
                     </TableRow>
@@ -283,7 +354,9 @@ export default function ProductsPage() {
                       <TableRow key={product.id}>
                         <TableCell>
                           <div className="font-medium">{product.name}</div>
-                          <div className="text-sm text-muted-foreground">{product.description}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {product.description}
+                          </div>
                         </TableCell>
                         <TableCell>{product.category}</TableCell>
                         <TableCell>${product.price.toFixed(2)}</TableCell>
@@ -301,7 +374,9 @@ export default function ProductsPage() {
                               <DropdownMenuLabel>Actions</DropdownMenuLabel>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem asChild>
-                                <Link href={`/dashboard/products/${product.id}`}>
+                                <Link
+                                  href={`/dashboard/products/${product.id}`}
+                                >
                                   <Edit className="mr-2 h-4 w-4" />
                                   Edit
                                 </Link>
@@ -326,5 +401,5 @@ export default function ProductsPage() {
         </Card>
       </div>
     </PageTransition>
-  )
+  );
 }

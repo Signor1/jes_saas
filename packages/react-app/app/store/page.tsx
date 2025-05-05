@@ -12,14 +12,7 @@ import { Badge } from "@/components/ui/badge"
 
 
 const getStoreSettings = () => {
-  // // Check if we have settings in localStorage (for demo purposes)
-  // const savedSettings = typeof window !== "undefined" ? localStorage.getItem("storeSettings") : null
 
-  // if (savedSettings) {
-  //   return JSON.parse(savedSettings)
-  // }
-
-  // Default settings
   return {
     storeName: "JES Store",
     storeDescription: "Welcome to our store. Find great products at amazing prices!",

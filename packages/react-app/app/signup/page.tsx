@@ -1,46 +1,80 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState } from "react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { CreditCard, Eye, EyeOff, Loader2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { toast } from "sonner"
-import { MotionDiv, fadeIn, slideUp } from "@/components/animations/motion"
+import type React from "react";
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { CreditCard, Loader2, Phone } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
+import { MotionDiv, fadeIn, slideUp } from "@/components/animations/motion";
+import { useAccount } from "wagmi";
+import { useAPI } from "@/contexts/jes-context";
 
 export default function SignupPage() {
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
+  const { registerUser } = useAPI();
+  const { address } = useAccount();
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    password: "",
-    storeName: "",
-  })
+    phoneNumber: "",
+    address: "",
+  });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
+    e.preventDefault();
+    setIsLoading(true);
 
     try {
-      toast.success("Account created!,Your account has been created successfully.")
-      router.push("/dashboard")
+      console.log(address);
+      const payload = {
+        wallet_address: address,
+        user_name: formData.name,
+        email: formData.email,
+        phone_number: formData.phoneNumber,
+        house_address: formData.address,
+      }
+      console.log(payload);
+      const response = await registerUser(payload);
+      console.log(response);
+      setIsLoading(false);
+      if (response && response.token) {
+        toast.success(
+          "Account created!, Your account has been created successfully."
+        );
+      }
+      setFormData({
+        name: "",
+        email: "",
+        phoneNumber: "",
+        address: "",
+      });
+      router.push("/dashboard");
     } catch (error) {
-      toast("Error, There was an error creating your account. Please try again.")
+      toast(
+        "Error, There was an error creating your account. Please try again."
+      );
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-muted/40 p-4">
@@ -56,7 +90,9 @@ export default function SignupPage() {
             <span className="text-2xl font-bold">JES-Storefront</span>
           </div>
           <h1 className="text-2xl font-bold">Create your merchant account</h1>
-          <p className="mt-2 text-muted-foreground">Start accepting payments with JES-Storefront today</p>
+          <p className="mt-2 text-muted-foreground">
+            Start accepting payments with JES-Storefront today
+          </p>
         </MotionDiv>
 
         <MotionDiv variants={slideUp} initial="hidden" animate="visible">
@@ -64,11 +100,13 @@ export default function SignupPage() {
             <form onSubmit={handleSubmit}>
               <CardHeader>
                 <CardTitle>Sign Up</CardTitle>
-                <CardDescription>Enter your information to create an account</CardDescription>
+                <CardDescription>
+                  Enter your information to create an account
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Full Name</Label>
+                  <Label htmlFor="name">User Name</Label>
                   <Input
                     id="name"
                     name="name"
@@ -91,39 +129,36 @@ export default function SignupPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <div className="relative">
-                    <Input
-                      id="password"
-                      name="password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="••••••••"
-                      required
-                      minLength={8}
-                      value={formData.password}
-                      onChange={handleChange}
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="absolute right-0 top-0 h-full px-3 py-2 text-muted-foreground"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      <span className="sr-only">{showPassword ? "Hide password" : "Show password"}</span>
-                    </Button>
+                  <Label htmlFor="phoneNumber">Phone Number</Label>
+                  <div className="flex space-x-2">
+                    <div className="relative flex-1">
+                      <Input
+                        id="phoneNumber"
+                        name="phoneNumber"
+                        type="tel"
+                        placeholder="+234 9065729637"
+                        required
+                        value={formData.phoneNumber}
+                        onChange={handleChange}
+                        className="pl-10"
+                      />
+                      <div className="absolute left-3 -top-1 flex h-full items-center text-muted-foreground">
+                        <Phone className="h-4 w-4" />
+                      </div>
+                    </div>
                   </div>
-                  <p className="text-xs text-muted-foreground">Password must be at least 8 characters long</p>
+                  <p className="text-xs text-muted-foreground">
+                    Include country code for international numbers
+                  </p>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="storeName">Store Name</Label>
+                  <Label htmlFor="address">Address</Label>
                   <Input
-                    id="storeName"
-                    name="storeName"
-                    placeholder="My Awesome Store"
+                    id="address"
+                    name="address"
+                    placeholder="123 Main Street"
                     required
-                    value={formData.storeName}
+                    value={formData.address}
                     onChange={handleChange}
                   />
                 </div>
@@ -141,7 +176,10 @@ export default function SignupPage() {
                 </Button>
                 <div className="text-center text-sm">
                   Already have an account?{" "}
-                  <Link href="/login" className="font-medium text-primary underline-offset-4 hover:underline">
+                  <Link
+                    href="/login"
+                    className="font-medium text-primary underline-offset-4 hover:underline"
+                  >
                     Log in
                   </Link>
                 </div>
@@ -151,5 +189,5 @@ export default function SignupPage() {
         </MotionDiv>
       </div>
     </div>
-  )
+  );
 }
