@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { PageTransition } from "@/components/animations/page-transition"
 import { MotionDiv, itemFade, staggerContainer } from "@/components/animations/motion"
 import { toast } from "sonner"
+import Image from "next/image"
 
 interface UserData {
   id: string
@@ -99,7 +100,7 @@ export default function ProfilePage() {
       localStorage.setItem("user", JSON.stringify(updatedUser))
       setUser(updatedUser as UserData)
 
-      toast.success( "Profile updated")
+      toast.success("Profile updated")
     } catch (error) {
       toast.error("There was an error updating your profile. Please try again.")
     } finally {
@@ -226,7 +227,7 @@ export default function ProfilePage() {
                     <CardContent className="flex flex-col items-center space-y-4">
                       <div className="relative h-32 w-32 overflow-hidden rounded-full">
                         {user?.avatar ? (
-                          <img
+                          <Image
                             src={user.avatar || "/placeholder.svg"}
                             alt="Avatar"
                             className="h-full w-full object-cover"

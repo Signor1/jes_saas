@@ -33,12 +33,12 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      
+
       toast.success("Welcome back!, You are logged in",)
 
       router.push("/dashboard")
     } catch (error) {
-        toast.error( "Login failed, Invalid email or password. Please try again.")
+      toast.error("Login failed, Invalid email or password. Please try again.")
 
     } finally {
       setIsLoading(false)

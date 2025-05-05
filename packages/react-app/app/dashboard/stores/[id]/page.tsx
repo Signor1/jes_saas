@@ -99,12 +99,12 @@ export default function StoreDetailPage() {
         const updatedStores = stores.map((s: Store) =>
           s.id === id
             ? {
-                ...s,
-                name: formData.name,
-                description: formData.description,
-                isActive: formData.isActive,
-                logo: store.logo, // Use the updated logo if it was changed
-              }
+              ...s,
+              name: formData.name,
+              description: formData.description,
+              isActive: formData.isActive,
+              logo: store.logo, // Use the updated logo if it was changed
+            }
             : s,
         )
         localStorage.setItem("stores", JSON.stringify(updatedStores))

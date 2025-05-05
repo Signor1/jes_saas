@@ -1,6 +1,7 @@
 "use client"
 
 import { CreditCard, ShoppingBag } from "lucide-react"
+import Image from "next/image"
 
 interface StorePreviewProps {
   settings: {
@@ -24,7 +25,7 @@ export function StorePreview({ settings, isMobile }: StorePreviewProps) {
       <div className="border-b" style={{ backgroundColor: secondaryColor, color: "#000" }}>
         <div className={`flex items-center justify-between ${isMobile ? "p-3" : "p-4"}`}>
           <div className="flex items-center gap-2">
-            <img src={logo || "/placeholder.svg"} alt="Logo" className="h-8 w-8 rounded-md" />
+            <Image src={logo || "/placeholder.svg"} alt="Logo" className="h-8 w-8 rounded-md" />
             <span className={`font-bold ${isMobile ? "text-sm" : "text-base"}`}>{storeName}</span>
           </div>
           <div className="flex items-center gap-3">

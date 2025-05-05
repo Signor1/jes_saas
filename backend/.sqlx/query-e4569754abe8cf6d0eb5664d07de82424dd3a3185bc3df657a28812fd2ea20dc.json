@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT owner_address, image_cid FROM stores WHERE id = $1\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "owner_address",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 1,
+        "name": "image_cid",
+        "type_info": "Varchar"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      true
+    ]
+  },
+  "hash": "e4569754abe8cf6d0eb5664d07de82424dd3a3185bc3df657a28812fd2ea20dc"
+}

@@ -1,0 +1,52 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT ci.product_id, ci.quantity, p.price, p.store_id, p.quantity as stock, s.owner_address\n        FROM cart_items ci\n        JOIN products p ON ci.product_id = p.id\n        JOIN stores s ON p.store_id = s.id\n        WHERE ci.cart_id = $1\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "product_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "quantity",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 2,
+        "name": "price",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 3,
+        "name": "store_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 4,
+        "name": "stock",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 5,
+        "name": "owner_address",
+        "type_info": "Varchar"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "445dd1e87a724ee5c2144f451c9fcda50b4d8a5bf3021799934328c2fc055cbf"
+}
